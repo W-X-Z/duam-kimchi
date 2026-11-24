@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f7f1e6;
+  --color-paper-2: #efe5d3;
+  --color-ink: #2b211b;
+  --color-ink-soft: #6b5d52;
+  --color-line: #ddcfb8;
+  --color-chili: #b3301f;
+  --color-chili-dark: #8f2416;
+  --color-cabbage: #4d6b3c;
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --font-serif: "Noto Serif KR", "Nanum Myeongjo", serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+}
+
+.hanji {
+  background-image: radial-gradient(rgba(43, 33, 27, 0.05) 1px, transparent 1px);
+  background-size: 6px 6px;
+}
