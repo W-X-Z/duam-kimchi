@@ -12,7 +12,7 @@ import {
   createSessionToken,
   isAdmin,
 } from "@/lib/auth";
-import type { PriceOption, SiteSettings } from "@/lib/types";
+import type { OrderStatus, PriceOption, SiteSettings } from "@/lib/types";
 
 export type FormState = { ok?: boolean; error?: string; at?: number };
 
@@ -57,7 +57,7 @@ export async function login(_: FormState, fd: FormData): Promise<FormState> {
     path: "/",
     maxAge,
   });
-  redirect("/admin");
+  redirect("/admin/orders");
 }
 
 export async function logout() {
@@ -90,6 +90,7 @@ export async function saveMenuItem(_: FormState, fd: FormData): Promise<FormStat
   const row: Record<string, unknown> = {
     name,
     description: str(fd, "description"),
+    detail: str(fd, "detail"),
     tag: str(fd, "tag"),
     options,
     is_soldout: fd.get("is_soldout") === "on",
@@ -179,7 +180,6 @@ const SETTING_FIELDS: (keyof SiteSettings)[] = [
   "account_number",
   "account_holder",
   "order_guide",
-  "shipping_fee",
   "shipping_guide",
   "business_info",
 ];
@@ -189,6 +189,10 @@ export async function saveSettings(_: FormState, fd: FormData): Promise<FormStat
   const row: Record<string, unknown> = { id: 1, updated_at: new Date().toISOString() };
   for (const key of SETTING_FIELDS) row[key] = str(fd, key);
   if (!row.shop_name) return { error: "가게 이름을 입력해 주세요." };
+  const fee = str(fd, "shipping_fee_amount").replace(/[^0-9]/g, "");
+  const freeOver = str(fd, "free_shipping_over").replace(/[^0-9]/g, "");
+  row.shipping_fee_amount = fee ? Number(fee) : 0;
+  row.free_shipping_over = freeOver ? Number(freeOver) : null;
 
   try {
     const file = pickFile(fd, "hero_image");
@@ -201,5 +205,22 @@ export async function saveSettings(_: FormState, fd: FormData): Promise<FormStat
   }
 
   updateTag(SITE_TAG);
+  return { ok: true, at: Date.now() };
+}
+
+/* ---------- Orders ---------- */
+
+const STATUSES: OrderStatus[] = ["pending", "paid", "shipped", "cancelled"];
+
+export async function updateOrder(_: FormState, fd: FormData): Promise<FormState> {
+  await guard();
+  const id = str(fd, "id");
+  const status = str(fd, "status") as OrderStatus;
+  if (!id || !STATUSES.includes(status)) return { error: "잘못된 요청이에요." };
+  const { error } = await adminClient()
+    .from("orders")
+    .update({ status, tracking_no: str(fd, "tracking_no"), updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) return { error: "저장하지 못했어요." };
   return { ok: true, at: Date.now() };
 }

@@ -1,7 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import { getMenu, getSettings } from "@/lib/data";
-import { formatPrice, lines, type MenuItem } from "@/lib/types";
-import CopyButton from "@/components/CopyButton";
+import { formatPrice, lines, shippingLabel, type MenuItem } from "@/lib/types";
+import Link from "next/link";
+import SiteHeader from "@/components/SiteHeader";
+import MobileOrderBar from "@/components/cart/MobileOrderBar";
 
 const SWATCHES = ["bg-chili", "bg-cabbage", "bg-ink", "bg-chili-dark"];
 
@@ -11,30 +13,10 @@ export default async function Home() {
   const steps = lines(s.order_guide);
   const shipping = lines(s.shipping_guide);
   const business = lines(s.business_info);
-  const hasAccount = Boolean(s.account_number);
 
   return (
     <div className="hanji pb-24 md:pb-0">
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-line/70 bg-paper/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
-          <a href="#top" className="font-serif text-lg font-bold tracking-tight">
-            {s.shop_name}
-          </a>
-          <nav className="flex items-center gap-5 text-sm text-ink-soft">
-            <a href="#menu" className="hover:text-ink">메뉴</a>
-            <a href="#order" className="hover:text-ink">주문 안내</a>
-            {tel && (
-              <a
-                href={`tel:${tel}`}
-                className="hidden rounded-full bg-chili px-4 py-1.5 font-medium text-white hover:bg-chili-dark md:inline-block"
-              >
-                전화 주문
-              </a>
-            )}
-          </nav>
-        </div>
-      </header>
+      <SiteHeader shopName={s.shop_name} home />
 
       {/* Hero */}
       <section id="top" className="mx-auto max-w-5xl px-5 pt-12 pb-14 md:pt-20 md:pb-20">
@@ -55,7 +37,7 @@ export default async function Home() {
                 href="#menu"
                 className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-paper hover:bg-ink/85"
               >
-                메뉴·가격 보기
+                메뉴 보고 주문하기
               </a>
               {s.kakao_url ? (
                 <a
@@ -64,14 +46,14 @@ export default async function Home() {
                   rel="noopener noreferrer"
                   className="rounded-full border border-ink/20 px-6 py-3 text-sm font-medium hover:border-ink"
                 >
-                  카카오톡 주문
+                  카카오톡 문의
                 </a>
               ) : tel ? (
                 <a
                   href={`tel:${tel}`}
                   className="rounded-full border border-ink/20 px-6 py-3 text-sm font-medium hover:border-ink"
                 >
-                  전화 주문
+                  전화 문의
                 </a>
               ) : null}
             </div>
@@ -102,7 +84,7 @@ export default async function Home() {
         <div className="mx-auto max-w-5xl px-5 py-16 md:py-20">
           <div className="mb-10 flex items-end justify-between gap-4">
             <h2 className="font-serif text-3xl font-black md:text-4xl">메뉴 · 가격</h2>
-            {s.shipping_fee && <p className="text-sm text-ink-soft">{s.shipping_fee}</p>}
+            <p className="text-sm text-ink-soft">{shippingLabel(s)}</p>
           </div>
 
           {menu.length === 0 ? (
@@ -135,30 +117,11 @@ export default async function Home() {
           )}
 
           <div className="space-y-5">
-            {hasAccount && (
-              <div className="rounded-2xl bg-ink p-6 text-paper">
-                <p className="text-sm text-paper/60">입금 계좌</p>
-                <p className="mt-2 text-sm">{s.bank_name}</p>
-                <div className="mt-1 flex items-center justify-between gap-3">
-                  <p className="font-mono text-xl font-semibold tracking-wide md:text-2xl">
-                    {s.account_number}
-                  </p>
-                  <CopyButton
-                    text={`${s.bank_name} ${s.account_number}`.trim()}
-                    className="shrink-0 rounded-full bg-paper/15 px-3 py-1.5 text-xs hover:bg-paper/25"
-                  />
-                </div>
-                {s.account_holder && (
-                  <p className="mt-1 text-sm text-paper/70">예금주 {s.account_holder}</p>
-                )}
-              </div>
-            )}
-
-            {(shipping.length > 0 || s.shipping_fee) && (
+            {(
               <div className="rounded-2xl border border-line bg-paper p-6">
                 <p className="mb-3 font-medium">택배 배송</p>
                 <ul className="space-y-2 text-[15px] text-ink-soft">
-                  {s.shipping_fee && <li>· {s.shipping_fee}</li>}
+                  <li>· {shippingLabel(s)}</li>
                   {shipping.map((l, i) => (
                     <li key={i}>· {l}</li>
                   ))}
@@ -217,39 +180,21 @@ export default async function Home() {
         </div>
       </footer>
 
-      {/* Mobile action bar */}
-      {(tel || s.kakao_url) && (
-        <div className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-line bg-paper/95 p-3 backdrop-blur md:hidden">
-          {tel && (
-            <a
-              href={`tel:${tel}`}
-              className="flex-1 rounded-xl bg-chili py-3 text-center text-[15px] font-medium text-white"
-            >
-              전화 주문
-            </a>
-          )}
-          {s.kakao_url && (
-            <a
-              href={s.kakao_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 rounded-xl bg-[#FEE500] py-3 text-center text-[15px] font-medium text-[#191919]"
-            >
-              카카오톡 주문
-            </a>
-          )}
-        </div>
-      )}
+      <MobileOrderBar />
     </div>
   );
 }
 
 function MenuCard({ item, swatch }: { item: MenuItem; swatch: string }) {
   return (
-    <li className="flex flex-col overflow-hidden rounded-2xl border border-line bg-paper">
-      <div className="relative aspect-[4/3]">
+    <li>
+      <Link
+        href={`/menu/${item.id}`}
+        className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-paper transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-24px_rgba(43,33,27,0.45)]"
+      >
+      <div className="relative aspect-[4/3] overflow-hidden">
         {item.image_url ? (
-          <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
+          <img src={item.image_url} alt={item.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
         ) : (
           <div className={`flex h-full w-full items-center justify-center ${swatch}`}>
             <span className="font-serif text-6xl font-black text-paper/90">{item.name.slice(0, 1)}</span>
@@ -284,6 +229,7 @@ function MenuCard({ item, swatch }: { item: MenuItem; swatch: string }) {
           ))}
         </dl>
       </div>
+      </Link>
     </li>
   );
 }

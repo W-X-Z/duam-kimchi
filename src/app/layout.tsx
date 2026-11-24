@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { getSettings } from "@/lib/data";
+import { CartProvider } from "@/components/cart/CartProvider";
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();
@@ -37,7 +38,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&display=swap"
         />
       </head>
-      <body className="min-h-dvh">{children}</body>
+      <body className="min-h-dvh">
+        <CartProvider>{children}</CartProvider>
+      </body>
     </html>
   );
 }

@@ -59,9 +59,26 @@ export default function SettingsForm({ settings: s }: { settings: SiteSettings }
         <Field label="주문 방법 (한 줄에 한 단계)">
           <textarea name="order_guide" defaultValue={s.order_guide} rows={5} className={inputCls} />
         </Field>
-        <Field label="택배비">
-          <input name="shipping_fee" defaultValue={s.shipping_fee} placeholder="택배비 4,000원" className={inputCls} />
-        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="택배비 (원)">
+            <input
+              name="shipping_fee_amount"
+              defaultValue={s.shipping_fee_amount}
+              inputMode="numeric"
+              placeholder="4000"
+              className={inputCls}
+            />
+          </Field>
+          <Field label="무료 배송 기준 (원)">
+            <input
+              name="free_shipping_over"
+              defaultValue={s.free_shipping_over ?? ""}
+              inputMode="numeric"
+              placeholder="50000"
+              className={inputCls}
+            />
+          </Field>
+        </div>
         <Field label="배송 안내 (한 줄에 하나)">
           <textarea name="shipping_guide" defaultValue={s.shipping_guide} rows={4} className={inputCls} />
         </Field>
