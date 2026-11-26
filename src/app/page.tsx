@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { getMenu, getSettings } from "@/lib/data";
-import { formatPrice, lines, shippingLabel, type MenuItem } from "@/lib/types";
+import { formatPrice, lines, orderPolicyLabel, type MenuItem } from "@/lib/types";
+import CopyButton from "@/components/CopyButton";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import MobileOrderBar from "@/components/cart/MobileOrderBar";
@@ -82,9 +83,27 @@ export default async function Home() {
       {/* Menu */}
       <section id="menu" className="scroll-mt-14 border-y border-line/70 bg-paper-2/60">
         <div className="mx-auto max-w-5xl px-5 py-16 md:py-20">
-          <div className="mb-10 flex items-end justify-between gap-4">
+          <div className="mb-8">
             <h2 className="font-serif text-3xl font-black md:text-4xl">메뉴 · 가격</h2>
-            <p className="text-sm text-ink-soft">{shippingLabel(s)}</p>
+            {s.menu_intro && <p className="mt-4 max-w-2xl text-[17px] leading-8 text-ink-soft">{s.menu_intro}</p>}
+          </div>
+
+          <div className="mb-8 grid gap-3 md:grid-cols-[1fr_auto]">
+            {s.account_number && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl bg-ink px-5 py-4 text-paper">
+                <span className="text-sm text-paper/60">입금 계좌</span>
+                <span className="font-medium">{s.bank_name}</span>
+                <span className="font-mono text-lg font-semibold tracking-wide">{s.account_number}</span>
+                {s.account_holder && <span className="text-sm text-paper/70">{s.account_holder}</span>}
+                <CopyButton
+                  text={`${s.bank_name} ${s.account_number}`.trim()}
+                  className="ml-auto rounded-full bg-paper/15 px-3 py-1.5 text-xs hover:bg-paper/25"
+                />
+              </div>
+            )}
+            <div className="flex items-center rounded-2xl border border-line bg-paper px-5 py-4 text-[15px] font-medium">
+              {orderPolicyLabel(s)}
+            </div>
           </div>
 
           {menu.length === 0 ? (
@@ -121,7 +140,7 @@ export default async function Home() {
               <div className="rounded-2xl border border-line bg-paper p-6">
                 <p className="mb-3 font-medium">택배 배송</p>
                 <ul className="space-y-2 text-[15px] text-ink-soft">
-                  <li>· {shippingLabel(s)}</li>
+                  <li>· {orderPolicyLabel(s)}</li>
                   {shipping.map((l, i) => (
                     <li key={i}>· {l}</li>
                   ))}
@@ -215,9 +234,6 @@ function MenuCard({ item, swatch }: { item: MenuItem; swatch: string }) {
       </div>
       <div className="flex flex-1 flex-col p-5">
         <h3 className="font-serif text-xl font-bold">{item.name}</h3>
-        {item.description && (
-          <p className="mt-1.5 text-[15px] leading-6 text-ink-soft">{item.description}</p>
-        )}
         <dl className="mt-auto divide-y divide-dashed divide-line pt-4">
           {item.options.map((o, i) => (
             <div key={i} className="flex items-baseline justify-between py-2">

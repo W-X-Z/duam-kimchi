@@ -8,7 +8,7 @@ import QtyStepper from "@/components/QtyStepper";
 import { formatPrice, shippingFeeFor, type MenuItem, type SiteSettings } from "@/lib/types";
 import { placeOrder, type OrderFormState } from "./actions";
 
-type Shipping = Pick<SiteSettings, "shipping_fee_amount" | "free_shipping_over">;
+type Shipping = Pick<SiteSettings, "shipping_fee_amount" | "free_shipping_over" | "min_order_amount">;
 
 declare global {
   interface Window {
@@ -62,6 +62,7 @@ export default function OrderClient({ menu, shipping }: { menu: MenuItem[]; ship
   const fee = shippingFeeFor(shipping, itemsTotal);
   const hasSoldout = lines.some((l) => l.menu.is_soldout);
   const remain = shipping.free_shipping_over && fee > 0 ? shipping.free_shipping_over - itemsTotal : 0;
+  const belowMin = shipping.min_order_amount > 0 && itemsTotal < shipping.min_order_amount;
 
   if (!ready) return <div className="h-64" />;
 
@@ -246,9 +247,15 @@ export default function OrderClient({ menu, shipping }: { menu: MenuItem[]; ship
 
         {state.error && <p className="mt-4 rounded-lg bg-chili/20 px-3 py-2 text-sm text-[#ffb4a6]">{state.error}</p>}
         {hasSoldout && <p className="mt-4 text-sm text-[#ffb4a6]">품절 상품을 빼고 주문해 주세요</p>}
+        {belowMin && !hasSoldout && (
+          <p className="mt-4 text-sm text-[#ffb4a6]">
+            최소 주문 금액은 {formatPrice(shipping.min_order_amount)}이에요 ·{" "}
+            {formatPrice(shipping.min_order_amount - itemsTotal)} 더 담아 주세요
+          </p>
+        )}
 
         <button
-          disabled={pending || hasSoldout || itemsTotal === 0}
+          disabled={pending || hasSoldout || belowMin || itemsTotal === 0}
           className="mt-5 w-full rounded-xl bg-chili py-4 text-[17px] font-semibold text-white hover:bg-chili-dark disabled:opacity-50"
         >
           {pending ? "주문 중" : `${formatPrice(itemsTotal + fee)} 주문하기`}

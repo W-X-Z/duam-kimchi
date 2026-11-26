@@ -9,6 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: s.shop_name,
     description,
+    appleWebApp: { capable: true, title: "두암김치", statusBarStyle: "default" },
     openGraph: {
       title: s.shop_name,
       description,

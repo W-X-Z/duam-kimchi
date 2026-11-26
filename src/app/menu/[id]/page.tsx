@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMenu, getMenuItem, getSettings } from "@/lib/data";
-import { lines, shippingLabel } from "@/lib/types";
+import { lines, orderPolicyLabel } from "@/lib/types";
 import SiteHeader from "@/components/SiteHeader";
 import AddToCart from "./AddToCart";
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/menu/[id]">): Pro
   if (!item) return {};
   return {
     title: `${item.name} | ${s.shop_name}`,
-    description: item.description,
+    description: s.menu_intro || item.name,
     openGraph: { images: item.image_url ? [item.image_url] : undefined },
   };
 }
@@ -28,7 +28,6 @@ export default async function MenuDetailPage({ params }: PageProps<"/menu/[id]">
   const [item, s] = await Promise.all([getMenuItem(id), getSettings()]);
   if (!item) notFound();
 
-  const detail = lines(item.detail);
   const shipping = lines(s.shipping_guide);
 
   return (
@@ -63,25 +62,15 @@ export default async function MenuDetailPage({ params }: PageProps<"/menu/[id]">
               </span>
             )}
             <h1 className="mt-3 font-serif text-3xl font-black md:text-4xl">{item.name}</h1>
-            {item.description && <p className="mt-3 text-[17px] leading-7 text-ink-soft">{item.description}</p>}
+            {s.menu_intro && <p className="mt-3 text-[17px] leading-7 text-ink-soft">{s.menu_intro}</p>}
 
             <AddToCart item={item} />
 
-            {detail.length > 0 && (
-              <section className="mt-10 border-t border-line pt-6">
-                <h2 className="mb-3 font-semibold">상품 정보</h2>
-                <ul className="space-y-2 text-[15px] leading-7 text-ink-soft">
-                  {detail.map((l, i) => (
-                    <li key={i}>{l}</li>
-                  ))}
-                </ul>
-              </section>
-            )}
 
             <section className="mt-8 border-t border-line pt-6">
               <h2 className="mb-3 font-semibold">배송</h2>
               <ul className="space-y-2 text-[15px] leading-7 text-ink-soft">
-                <li>{shippingLabel(s)}</li>
+                <li>{orderPolicyLabel(s)}</li>
                 {shipping.map((l, i) => (
                   <li key={i}>{l}</li>
                 ))}

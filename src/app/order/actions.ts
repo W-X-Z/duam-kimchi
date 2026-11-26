@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { adminClient } from "@/lib/supabase";
 import { adminGetSettings } from "@/lib/data";
-import { shippingFeeFor, type CartEntry, type MenuItem, type OrderLine } from "@/lib/types";
+import { formatPrice, shippingFeeFor, type CartEntry, type MenuItem, type OrderLine } from "@/lib/types";
 
 export type OrderFormState = { error?: string; field?: string };
 
@@ -57,6 +57,9 @@ export async function placeOrder(_: OrderFormState, fd: FormData): Promise<Order
 
   const settings = await adminGetSettings();
   const items_total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+  if (settings.min_order_amount > 0 && items_total < settings.min_order_amount) {
+    return { error: `최소 주문 금액은 ${formatPrice(settings.min_order_amount)}이에요.` };
+  }
   const shipping_fee = shippingFeeFor(settings, items_total);
 
   const { data, error } = await db

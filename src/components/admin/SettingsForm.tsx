@@ -21,6 +21,9 @@ export default function SettingsForm({ settings: s }: { settings: SiteSettings }
         <Field label="소개글">
           <textarea name="intro" defaultValue={s.intro} rows={3} className={inputCls} />
         </Field>
+        <Field label="김치 소개 (메뉴판 위에 한 번 표시)">
+          <textarea name="menu_intro" defaultValue={s.menu_intro} rows={3} className={inputCls} />
+        </Field>
         <Field label="대표 사진">
           <ImageInput name="hero_image" removeName="remove_hero_image" current={s.hero_image_url} aspect="aspect-[4/5]" />
         </Field>
@@ -59,7 +62,16 @@ export default function SettingsForm({ settings: s }: { settings: SiteSettings }
         <Field label="주문 방법 (한 줄에 한 단계)">
           <textarea name="order_guide" defaultValue={s.order_guide} rows={5} className={inputCls} />
         </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label="최소 주문 (원)">
+            <input
+              name="min_order_amount"
+              defaultValue={s.min_order_amount || ""}
+              inputMode="numeric"
+              placeholder="30000"
+              className={inputCls}
+            />
+          </Field>
           <Field label="택배비 (원)">
             <input
               name="shipping_fee_amount"

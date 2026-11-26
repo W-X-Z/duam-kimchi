@@ -29,6 +29,8 @@ export type SiteSettings = {
   account_number: string;
   account_holder: string;
   order_guide: string;
+  menu_intro: string;
+  min_order_amount: number;
   shipping_fee_amount: number;
   free_shipping_over: number | null;
   shipping_guide: string;
@@ -48,7 +50,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   account_number: "",
   account_holder: "",
   order_guide: "",
-  shipping_fee_amount: 4000,
+  menu_intro: "",
+  min_order_amount: 0,
+  shipping_fee_amount: 5000,
   free_shipping_over: null,
   shipping_guide: "",
   business_info: "",
@@ -122,6 +126,15 @@ export function shippingLabel(s: Pick<SiteSettings, "shipping_fee_amount" | "fre
   return s.free_shipping_over && s.shipping_fee_amount > 0
     ? `${base} · ${formatPrice(s.free_shipping_over)} 이상 무료`
     : base;
+}
+
+export function orderPolicyLabel(
+  s: Pick<SiteSettings, "shipping_fee_amount" | "free_shipping_over" | "min_order_amount">,
+) {
+  const parts: string[] = [];
+  if (s.min_order_amount > 0) parts.push(`최소 주문 ${formatPrice(s.min_order_amount)}`);
+  parts.push(shippingLabel(s));
+  return parts.join(" · ");
 }
 
 export function formatPhone(p: string) {

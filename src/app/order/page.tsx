@@ -14,7 +14,11 @@ export default async function OrderPage() {
         <h1 className="mb-8 font-serif text-3xl font-black">주문하기</h1>
         <OrderClient
           menu={menu}
-          shipping={{ shipping_fee_amount: s.shipping_fee_amount, free_shipping_over: s.free_shipping_over }}
+          shipping={{
+            shipping_fee_amount: s.shipping_fee_amount,
+            free_shipping_over: s.free_shipping_over,
+            min_order_amount: s.min_order_amount,
+          }}
         />
       </main>
     </div>

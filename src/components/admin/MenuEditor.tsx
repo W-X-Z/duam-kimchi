@@ -29,12 +29,6 @@ export default function MenuEditor({ item }: { item: MenuItem | null }) {
           <Field label="메뉴 이름">
             <input name="name" defaultValue={item?.name} required className={inputCls} placeholder="포기김치" />
           </Field>
-          <Field label="설명">
-            <textarea name="description" defaultValue={item?.description} rows={2} className={inputCls} />
-          </Field>
-          <Field label="상품 정보 (한 줄에 하나)">
-            <textarea name="detail" defaultValue={item?.detail} rows={4} className={inputCls} />
-          </Field>
           <Field label="뱃지">
             <input name="tag" defaultValue={item?.tag} className={inputCls} placeholder="대표, 계절 한정" />
           </Field>

@@ -89,8 +89,6 @@ export async function saveMenuItem(_: FormState, fd: FormData): Promise<FormStat
   const db = adminClient();
   const row: Record<string, unknown> = {
     name,
-    description: str(fd, "description"),
-    detail: str(fd, "detail"),
     tag: str(fd, "tag"),
     options,
     is_soldout: fd.get("is_soldout") === "on",
@@ -180,6 +178,7 @@ const SETTING_FIELDS: (keyof SiteSettings)[] = [
   "account_number",
   "account_holder",
   "order_guide",
+  "menu_intro",
   "shipping_guide",
   "business_info",
 ];
@@ -193,6 +192,8 @@ export async function saveSettings(_: FormState, fd: FormData): Promise<FormStat
   const freeOver = str(fd, "free_shipping_over").replace(/[^0-9]/g, "");
   row.shipping_fee_amount = fee ? Number(fee) : 0;
   row.free_shipping_over = freeOver ? Number(freeOver) : null;
+  const minOrder = str(fd, "min_order_amount").replace(/[^0-9]/g, "");
+  row.min_order_amount = minOrder ? Number(minOrder) : 0;
 
   try {
     const file = pickFile(fd, "hero_image");
@@ -223,4 +224,67 @@ export async function updateOrder(_: FormState, fd: FormData): Promise<FormState
     .eq("id", id);
   if (error) return { error: "저장하지 못했어요." };
   return { ok: true, at: Date.now() };
+}
+
+/* ---------- Menu board (bulk edit) ---------- */
+
+export async function saveMenuBoard(_: FormState, fd: FormData): Promise<FormState> {
+  await guard();
+  const count = Math.min(Number(fd.get("row_count")) || 0, 60);
+  const db = adminClient();
+
+  const { data: existingRows, error: readErr } = await db.from("menu_items").select("id,options");
+  if (readErr) return { error: "저장하지 못했어요." };
+  const existing = new Map((existingRows ?? []).map((r) => [r.id as string, (r.options as PriceOption[]) ?? []]));
+
+  type Op = { id?: string; name: string; label: string; price: number; soldout: boolean; order: number };
+  const upserts: Op[] = [];
+  const deletes: string[] = [];
+  let order = 0;
+
+  for (let i = 0; i < count; i++) {
+    const id = str(fd, `id_${i}`);
+    const name = str(fd, `name_${i}`);
+    const label = str(fd, `weight_${i}`);
+    const priceRaw = str(fd, `price_${i}`).replace(/[^0-9]/g, "");
+    const soldout = fd.get(`soldout_${i}`) === "on";
+
+    if (fd.get(`delete_${i}`) === "on") {
+      if (id) deletes.push(id);
+      continue;
+    }
+    if (!name && !label && !priceRaw) continue; // empty row
+    if (!name) return { error: `${i + 1}번 칸에 김치 이름을 적어 주세요.` };
+    if (!priceRaw) return { error: `${name} 가격을 적어 주세요.` };
+    const price = Number(priceRaw);
+    if (price < 100 || price > 10_000_000) return { error: `${name} 가격을 확인해 주세요.` };
+    order += 1;
+    upserts.push({ id: id || undefined, name, label: label || "1kg", price, soldout, order });
+  }
+
+  try {
+    if (deletes.length) {
+      const { error } = await db.from("menu_items").delete().in("id", deletes);
+      if (error) throw error;
+    }
+    for (const op of upserts) {
+      const prevRest = op.id ? (existing.get(op.id) ?? []).slice(1) : [];
+      const row = {
+        name: op.name,
+        options: [{ label: op.label, price: op.price }, ...prevRest],
+        is_soldout: op.soldout,
+        sort_order: op.order,
+        updated_at: new Date().toISOString(),
+      };
+      const { error } = op.id
+        ? await db.from("menu_items").update(row).eq("id", op.id)
+        : await db.from("menu_items").insert(row);
+      if (error) throw error;
+    }
+  } catch {
+    return { error: "저장하지 못했어요. 다시 눌러 주세요." };
+  }
+
+  updateTag(SITE_TAG);
+  redirect("/admin?saved=1");
 }

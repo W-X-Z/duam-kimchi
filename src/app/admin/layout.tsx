@@ -2,8 +2,11 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "관리자",
+  title: "김치 관리",
   robots: { index: false, follow: false },
+  manifest: "/admin.webmanifest",
+  icons: { apple: "/admin-apple-icon.png", icon: "/admin-icon-192.png" },
+  appleWebApp: { capable: true, title: "김치 관리", statusBarStyle: "default" },
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
