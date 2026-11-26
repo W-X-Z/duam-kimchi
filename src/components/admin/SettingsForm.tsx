@@ -25,7 +25,7 @@ export default function SettingsForm({ settings: s }: { settings: SiteSettings }
           <textarea name="menu_intro" defaultValue={s.menu_intro} rows={3} className={inputCls} />
         </Field>
         <Field label="대표 사진">
-          <ImageInput name="hero_image" removeName="remove_hero_image" current={s.hero_image_url} aspect="aspect-[4/5]" />
+          <ImageInput name="hero_image" removeName="remove_hero_image" current={s.hero_image_url} aspect="aspect-[4/3]" />
         </Field>
       </Card>
 

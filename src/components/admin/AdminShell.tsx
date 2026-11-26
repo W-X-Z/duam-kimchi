@@ -22,14 +22,14 @@ export default function AdminShell({
             <Link href="/admin/settings" className={tab("settings")}>가게 정보</Link>
           </nav>
           <div className="flex items-center gap-3 text-sm">
-            <a href="/" target="_blank" className="text-ink-soft hover:text-ink">사이트 보기</a>
+            <a href="/" target="_blank" className="hidden text-ink-soft hover:text-ink sm:inline">사이트 보기</a>
             <form action={logout}>
               <button className="text-ink-soft hover:text-ink">로그아웃</button>
             </form>
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-8">{children}</main>
+      <main className="mx-auto max-w-3xl px-4 py-5 md:py-8">{children}</main>
     </>
   );
 }

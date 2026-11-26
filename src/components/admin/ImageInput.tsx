@@ -19,6 +19,7 @@ async function resize(file: File): Promise<File> {
   return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
 }
 
+/** Whole area is tappable; the chosen photo is shrunk in the browser before upload. */
 export default function ImageInput({
   name,
   removeName,
@@ -34,53 +35,57 @@ export default function ImageInput({
   const [preview, setPreview] = useState<string | null>(current);
   const [removed, setRemoved] = useState(false);
   const [busy, setBusy] = useState(false);
+  const has = preview && !removed;
 
   return (
     <div>
-      <div className={`relative w-full max-w-xs overflow-hidden rounded-xl bg-paper-2 ${aspect}`}>
-        {preview && !removed ? (
-          <img src={preview} alt="" className="h-full w-full object-cover" />
+      <label className={`relative block w-full cursor-pointer overflow-hidden rounded-2xl bg-paper-2 ${aspect}`}>
+        {has ? (
+          <img src={preview!} alt="" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-ink-soft">사진 없음</div>
+          <span className="flex h-full flex-col items-center justify-center gap-2 text-ink-soft">
+            <span className="text-4xl leading-none">＋</span>
+            <span className="text-[17px] font-medium">{busy ? "사진 준비 중" : "사진 넣기"}</span>
+          </span>
         )}
-      </div>
-      <div className="mt-2 flex items-center gap-2 text-sm">
-        <label className="cursor-pointer rounded-lg border border-black/15 bg-white px-3 py-1.5 hover:bg-black/5">
-          {busy ? "처리 중" : "사진 선택"}
-          <input
-            ref={inputRef}
-            type="file"
-            name={name}
-            accept="image/*"
-            className="hidden"
-            onChange={async (e) => {
-              const f = e.target.files?.[0];
-              if (!f) return;
-              setBusy(true);
-              const small = await resize(f);
-              const dt = new DataTransfer();
-              dt.items.add(small);
-              e.target.files = dt.files;
-              setPreview(URL.createObjectURL(small));
-              setRemoved(false);
-              setBusy(false);
-            }}
-          />
-        </label>
-        {preview && !removed && (
-          <button
-            type="button"
-            onClick={() => {
-              setRemoved(true);
-              if (inputRef.current) inputRef.current.value = "";
-            }}
-            className="rounded-lg px-3 py-1.5 text-ink-soft hover:bg-black/5"
-          >
-            삭제
-          </button>
+        {has && (
+          <span className="absolute right-3 bottom-3 rounded-full bg-ink/80 px-4 py-2 text-[15px] font-medium text-white">
+            {busy ? "사진 준비 중" : "사진 바꾸기"}
+          </span>
         )}
-        <input type="checkbox" name={removeName} checked={removed} readOnly hidden />
-      </div>
+        <input
+          ref={inputRef}
+          type="file"
+          name={name}
+          accept="image/*"
+          className="hidden"
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            if (!f) return;
+            setBusy(true);
+            const small = await resize(f);
+            const dt = new DataTransfer();
+            dt.items.add(small);
+            e.target.files = dt.files;
+            setPreview(URL.createObjectURL(small));
+            setRemoved(false);
+            setBusy(false);
+          }}
+        />
+      </label>
+      {has && (
+        <button
+          type="button"
+          onClick={() => {
+            setRemoved(true);
+            if (inputRef.current) inputRef.current.value = "";
+          }}
+          className="mt-2 px-1 py-2 text-[15px] text-ink-soft underline underline-offset-2"
+        >
+          사진 빼기
+        </button>
+      )}
+      <input type="checkbox" name={removeName} checked={removed} readOnly hidden />
     </div>
   );
 }
