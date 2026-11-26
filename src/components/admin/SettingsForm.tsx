@@ -62,16 +62,7 @@ export default function SettingsForm({ settings: s }: { settings: SiteSettings }
         <Field label="주문 방법 (한 줄에 한 단계)">
           <textarea name="order_guide" defaultValue={s.order_guide} rows={5} className={inputCls} />
         </Field>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="최소 주문 (원)">
-            <input
-              name="min_order_amount"
-              defaultValue={s.min_order_amount || ""}
-              inputMode="numeric"
-              placeholder="30000"
-              className={inputCls}
-            />
-          </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field label="택배비 (원)">
             <input
               name="shipping_fee_amount"
