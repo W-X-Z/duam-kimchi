@@ -3,7 +3,7 @@ import { formatPrice, lines, shippingLabel, type MenuItem, type SiteSettings } f
 export const SITE_URL = "https://duamkimchi.com";
 
 /** Search-console ownership tokens. Fill in once issued; empty values render nothing. */
-export const NAVER_SITE_VERIFICATION = "";
+export const NAVER_SITE_VERIFICATION = "8c6ff314f6079ea89168db93e5701064cd52d0ad";
 export const GOOGLE_SITE_VERIFICATION = "";
 
 export function absoluteUrl(path = "/") {
