@@ -6,6 +6,7 @@ import { getMenu, getMenuItem, getSettings } from "@/lib/data";
 import { lines, orderPolicyLabel } from "@/lib/types";
 import SiteHeader from "@/components/SiteHeader";
 import AddToCart from "./AddToCart";
+import { jsonLdHtml, productDescription, productJsonLd } from "@/lib/seo";
 
 export async function generateStaticParams() {
   const menu = await getMenu();
@@ -16,10 +17,18 @@ export async function generateMetadata({ params }: PageProps<"/menu/[id]">): Pro
   const { id } = await params;
   const [item, s] = await Promise.all([getMenuItem(id), getSettings()]);
   if (!item) return {};
+  const title = `${item.name} 택배 주문`;
+  const description = productDescription(item, s);
   return {
-    title: `${item.name} | ${s.shop_name}`,
-    description: s.menu_intro || item.name,
-    openGraph: { images: item.image_url ? [item.image_url] : undefined },
+    title,
+    description,
+    alternates: { canonical: `/menu/${item.id}` },
+    openGraph: {
+      title: `${title} | ${s.shop_name}`,
+      description,
+      url: `/menu/${item.id}`,
+      images: item.image_url ? [item.image_url] : undefined,
+    },
   };
 }
 
@@ -32,6 +41,7 @@ export default async function MenuDetailPage({ params }: PageProps<"/menu/[id]">
 
   return (
     <div className="hanji min-h-dvh pb-28 md:pb-0">
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(productJsonLd(item, s))} />
       <SiteHeader shopName={s.shop_name} />
 
       <main className="mx-auto max-w-5xl px-5 pt-6 pb-16 md:pt-10">
@@ -62,7 +72,9 @@ export default async function MenuDetailPage({ params }: PageProps<"/menu/[id]">
               </span>
             )}
             <h1 className="mt-3 font-serif text-3xl font-black md:text-4xl">{item.name}</h1>
-            {s.menu_intro && <p className="mt-3 text-[17px] leading-7 text-ink-soft">{s.menu_intro}</p>}
+            {(s.menu_intro || s.intro) && (
+              <p className="mt-3 text-[17px] leading-7 text-ink-soft">{s.menu_intro || s.intro}</p>
+            )}
 
             <AddToCart item={item} />
 

@@ -5,6 +5,10 @@ import CopyButton from "@/components/CopyButton";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import MobileOrderBar from "@/components/cart/MobileOrderBar";
+import type { Metadata } from "next";
+import { buildFaq, homeJsonLd, jsonLdHtml } from "@/lib/seo";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const SWATCHES = ["bg-chili", "bg-cabbage", "bg-ink", "bg-chili-dark"];
 
@@ -14,9 +18,11 @@ export default async function Home() {
   const steps = lines(s.order_guide);
   const shipping = lines(s.shipping_guide);
   const business = lines(s.business_info);
+  const faq = buildFaq(s);
 
   return (
     <div className="hanji pb-24 md:pb-0">
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(homeJsonLd(s, menu))} />
       <SiteHeader shopName={s.shop_name} home />
 
       {/* Hero */}
@@ -173,6 +179,23 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* FAQ */}
+      {faq.length > 0 && (
+        <section id="faq" className="scroll-mt-14 border-t border-line/70">
+          <div className="mx-auto max-w-5xl px-5 py-16 md:py-20">
+            <h2 className="mb-8 font-serif text-3xl font-black md:text-4xl">자주 묻는 질문</h2>
+            <dl className="divide-y divide-line border-y border-line">
+              {faq.map((f) => (
+                <div key={f.q} className="py-5">
+                  <dt className="font-semibold">{f.q}</dt>
+                  <dd className="mt-2 text-[15px] leading-7 text-ink-soft">{f.a}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-line/70 bg-paper-2/60">
